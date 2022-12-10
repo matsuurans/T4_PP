@@ -18,4 +18,16 @@ $ ./Main            -- carrega o ficheiro default.map
 $ ./Main -t         -- corre os testes
 -}
 
-main = undefined
+import System.Environment
+
+main = do
+    args <- getArgs
+    content <- readFile (getFile args)
+    putStrLn (getLab content)
+
+getFile args = if not (null args) then head args else "default.map"
+
+getLab [] = ""
+getLab (c:s)
+    | c == '*' = c:s
+    | otherwise = getLab s
