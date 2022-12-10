@@ -19,6 +19,7 @@ $ ./Main -t         -- corre os testes
 -}
 
 import System.Environment
+import Labirintos
 
 main = do
     args <- getArgs
