@@ -59,8 +59,22 @@ terminado (EstadoJogo _ _ _ terminado) = terminado
 
 -----------------------------------------------------
 
+<<<<<<< Updated upstream
 toString :: EstadoJogo -> String
 toString ej = insereChaves (unlines (insere (labirinto ej) (jogador ej) 'P')) (chaves ej)
+=======
+posicaoValida :: Lab -> Posicao -> Bool
+posicaoValida lab (x, y) =  (x < length lab && x >= 0) && (y < length lab && y >= 0)
+
+contaPortas = undefined
+
+-----------------------------------------------------
+
+-- as seguintes 4 funções auxiliares são usadas para formatar o EstadoJogo para o show
+
+estadoJogoStr :: Lab -> Posicao -> EstadoJogo -> String
+estadoJogoStr lab pos ej = insereChaves (formatLabLines (insere lab pos 'P')) (chaves ej)
+>>>>>>> Stashed changes
 
 insere :: Lab -> Posicao -> Char -> Lab
 insere lab pos elemento = fst splitRow ++ newRow : tail (snd splitRow)
