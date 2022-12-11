@@ -5,7 +5,9 @@ module Labirintos (EstadoJogo(..)
                   , chaves
                   , terminado
                   , toString
-                  , move
+                  , posicaoValida
+                  , contaPortas
+                  , moveEJ
                   ) where
 
 import Data.List(intercalate,sort)
@@ -62,7 +64,11 @@ terminado (EstadoJogo _ _ _ terminado) = terminado
 posicaoValida :: Lab -> Posicao -> Bool
 posicaoValida lab (x,y) =  (x < length lab && x >= 0) && (y < length lab && y >= 0)
 
-contaPortas = undefined
+contaLinha :: String -> Int
+contaLinha linha = sum [1 | x <- linha, x `elem` ['A'..'Z']]
+
+contaPortas :: Lab -> Int
+contaPortas lab = sum [contaLinha x | x <- lab]
 
 -----------------------------------------------------
 
@@ -99,17 +105,17 @@ novaPos ej d = (fst coord + fst oldPos,snd coord + snd oldPos)
 
 -----------------------------------------------------
 
-move :: EstadoJogo -> String -> EstadoJogo
-move ej [] = ej
-move ej (d:dir)
-  | dest == ' ' || dest == 'S' = move (EstadoJogo lab newPos chavesEJ False) dir
-  | dest == 'F' = move (EstadoJogo lab newPos chavesEJ True) dir
-  | dest == '*' = move (EstadoJogo lab posJogador chavesEJ False) dir
-  | dest == '@' = move (EstadoJogo lab (procuraIgnoraLinha lab '@' 0 (fst newPos)) chavesEJ False) dir
-  | dest `elem` ['a'..'z'] = move (EstadoJogo (insere lab (procura lab dest 0) ' ') newPos (sort (dest:chavesEJ)) False) dir
+moveEJ :: EstadoJogo -> String -> EstadoJogo
+moveEJ ej [] = ej
+moveEJ ej (d:dir)
+  | dest == ' ' || dest == 'S' = moveEJ (EstadoJogo lab newPos chavesEJ False) dir
+  | dest == 'F' = moveEJ (EstadoJogo lab newPos chavesEJ True) dir
+  | dest == '*' = moveEJ (EstadoJogo lab posJogador chavesEJ False) dir
+  | dest == '@' = moveEJ (EstadoJogo lab (procuraIgnoraLinha lab '@' 0 (fst newPos)) chavesEJ False) dir
+  | dest `elem` ['a'..'z'] = moveEJ (EstadoJogo (insere lab (procura lab dest 0) ' ') newPos (sort (dest:chavesEJ)) False) dir
   | dest `elem` ['A'..'Z'] = if toLower dest `elem` chavesEJ
-                             then move (EstadoJogo (insere lab (procura lab dest 0) ' ') newPos chavesEJ False) dir
-                             else move (EstadoJogo lab posJogador chavesEJ False) dir
+                             then moveEJ (EstadoJogo (insere lab (procura lab dest 0) ' ') newPos chavesEJ False) dir
+                             else moveEJ (EstadoJogo lab posJogador chavesEJ False) dir
   where newPos = novaPos ej d
         lab = labirinto ej
         dest = (lab !! fst newPos) !! snd newPos
