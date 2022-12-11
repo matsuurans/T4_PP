@@ -64,11 +64,29 @@ terminado (EstadoJogo _ _ _ terminado) = terminado
 posicaoValida :: Lab -> Posicao -> Bool
 posicaoValida lab (x,y) =  (x < length lab && x >= 0) && (y < length lab && y >= 0)
 
-contaLinha :: String -> Int
-contaLinha linha = sum [1 | x <- linha, x `elem` ['A'..'Z']]
+contaLinhaPortas :: String -> Int
+contaLinhaPortas linha = sum [1 | x <- linha, x `elem` ['A'..'Z']]
 
 contaPortas :: Lab -> Int
-contaPortas lab = sum [contaLinha x | x <- lab]
+contaPortas lab = sum [contaLinhaPortas x | x <- lab]
+
+posicaoPortal1 :: Lab -> Posicao
+posicaoPortal1 lab = procura lab '@' 0
+
+posicaoPortal2 :: Lab -> Posicao -> Posicao
+posicaoPortal2 lab (px,py) = procura lab '@' px
+
+contaLinhaPortais :: String -> Int
+contaLinhaPortais linha = sum [1 | x <- linha, x == '@']
+
+contaPortais :: Lab -> Int
+contaPortais lab = sum [contaLinhaPortais x | x <- lab]
+
+existem2PortaisChar :: Lab -> Bool
+existem2PortaisChar lab = contaPortais lab == 2
+
+existe1PortalChar :: Lab -> Bool
+existe1PortalChar lab = contaPortais lab == 1
 
 -----------------------------------------------------
 

@@ -13,3 +13,13 @@ prop_move_correctKeys ej moveArg = length (chaves $ moveEJ ej moveArg) >= length
 
 prop_move_correctDoors :: EstadoJogo -> String -> Bool
 prop_move_correctDoors ej moveArg = contaPortas (labirinto (moveEJ ej moveArg)) <= contaPortas (labirinto ej)
+
+--------------------------------------------------------
+
+prop_move_correctPortals :: EstadoJogo -> String -> Bool
+prop_move_correctPortals ej moveArg
+    | jogador (moveEJ ej moveArg) /= posicaoPortal1 (labirinto ej)
+        && jogador (moveEJ ej moveArg) /= posicaoPortal2 (labirinto ej) (posicaoPortal1 (labirinto ej)) = existem2PortaisChar (labirinto (moveEJ ej moveArg))
+    | jogador (moveEJ ej moveArg) == posicaoPortal1 (labirinto ej)
+        || jogador (moveEJ ej moveArg) == posicaoPortal2 (labirinto ej) (posicaoPortal1 (labirinto ej)) = existe1PortalChar (labirinto (moveEJ ej moveArg))
+    | otherwise = False
