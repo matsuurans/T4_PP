@@ -7,6 +7,10 @@ module Labirintos (EstadoJogo(..)
                   , toString
                   , posicaoValida
                   , contaPortas
+                  , posicaoPortal1
+                  , posicaoPortal2
+                  , existem2PortaisChar
+                  , existe1PortalChar
                   , moveEJ
                   ) where
 
