@@ -1,9 +1,10 @@
-module Labirintos (EstadoJogo
+module Labirintos (EstadoJogo(..)
                   , inicializa
                   , labirinto
                   , jogador
                   , chaves
                   , terminado
+                  , toString
                   , move
                   ) where
 
@@ -41,8 +42,8 @@ procuraIgnoraLinha (x:xs) e n l
 
 -----------------------------------------------------
 
-inicializa :: Lab -> EstadoJogo
-inicializa lab = EstadoJogo lab (procura lab 'S' 0) "" False
+inicializa :: Lab -> Posicao -> String -> EstadoJogo
+inicializa lab pos chaves = EstadoJogo lab pos chaves False
 
 labirinto :: EstadoJogo -> Lab
 labirinto (EstadoJogo lab _ _ _) = lab
@@ -58,10 +59,8 @@ terminado (EstadoJogo _ _ _ terminado) = terminado
 
 -----------------------------------------------------
 
--- as seguintes 4 funções auxiliares são usadas para formatar o EstadoJogo para o show
-
-estadoJogoStr :: Lab -> Posicao -> EstadoJogo -> String
-estadoJogoStr lab pos ej = insereChaves (formatLabLines (insere lab pos 'P')) (chaves ej)
+toString :: EstadoJogo -> String
+toString ej = insereChaves (unlines (insere (labirinto ej) (jogador ej) 'P')) (chaves ej)
 
 insere :: Lab -> Posicao -> Char -> Lab
 insere lab pos elemento = fst splitRow ++ newRow : tail (snd splitRow)
@@ -71,16 +70,8 @@ insere lab pos elemento = fst splitRow ++ newRow : tail (snd splitRow)
           splitCol = splitAt y (head(snd splitRow))
           newRow = fst splitCol ++ elemento : tail (snd splitCol)
 
-formatLabLines :: Lab -> String
-formatLabLines = intercalate "\n"
-
 insereChaves :: String -> String -> String
-insereChaves labStr chaves = labStr ++ "\n" ++ "chaves: " ++ chaves
-
------------------------------------------------------
-
-instance Show EstadoJogo where
-    show ej = estadoJogoStr (labirinto ej) (jogador ej) ej
+insereChaves labStr chaves = labStr ++ "chaves: " ++ chaves
 
 -----------------------------------------------------
 
