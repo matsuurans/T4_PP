@@ -77,5 +77,9 @@ getLab (c:s)
     | c == '*' = c:s
     | otherwise = getLab s
 
+getKeysEJ :: EstadoJogo -> String
+getKeysEJ ej = if keys == "" then "\n" else keys
+    where keys = chaves ej
+
 toFile :: EstadoJogo -> String
-toFile ej = show (jogador ej) ++ "\n" ++ chaves ej ++ unlines (labirinto ej)
+toFile ej = show (jogador ej) ++ "\n" ++ getKeysEJ ej ++ "\n" ++ unlines (labirinto ej)
