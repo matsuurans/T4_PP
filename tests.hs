@@ -50,6 +50,8 @@ prop_move_correctPortals ej moveArg
 -- se nao existir uma posicao de 'F' depois do move --> terminado tem de ser True
 -- se existir uma posicao de 'F' depois do move --> terminado tem de ser False
 prop_move_finishCorrectly :: EstadoJogo -> String -> Bool
-prop_move_finishCorrectly ej moveArg = (posF == (-1,-1) && over) || (posF /= (-1,-1) && not over)
-    where posF = procura (labirinto $ moveEJ ej moveArg) 'F' 0
-          over = terminado $ moveEJ ej moveArg
+prop_move_finishCorrectly ej moveArg = (posF == player && over) || (posF /= player && not over)
+    where newEJ = moveEJ ej moveArg
+          posF = procura (labirinto newEJ) 'F' 0
+          player = jogador newEJ
+          over = terminado newEJ
