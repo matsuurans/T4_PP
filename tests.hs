@@ -5,6 +5,7 @@ module Tests (prop_move_labLength
               , prop_move_correctPortals
               , prop_move_finishCorrectly
               , prop_move_notWall
+              , prop_move_portalTeleport
             ) where
 
 import Labirintos
@@ -18,27 +19,6 @@ dir = elements "ulrd"
 instance Arbitrary Movimentos where
     arbitrary = Movimentos <$> listOf1 dir
 
-{-newtype LabInterior = LabInterior [String]
-instance Arbitrary LabInterior where
-    arbitrary = do
-        x <- choose (2,5) :: Gen Int
-        y <- choose (2,5) :: Gen Int
-        let labs = replicateM x $ replicateM y $ elements "SF *@"
-        let validLabs = labs `suchThat ` condicaoValida
-        lab <- validLabs
-        LabInterior <$> validLabs
-
-criaLab :: LabInterior -> [String]
-criaLab (LabInterior lab) = parede:['*':x ++ "*" | x <- lab] ++ [parede]
-    where y = length $ head lab
-          parede = replicate (y+2) '*'
-
-instance Arbitrary EstadoJogo where
-    arbitrary = do
-        interior <- arbitrary :: Gen LabInterior
-        let lab = criaLab interior
-        let pos = procura lab 'S' 0
-        return $ EstadoJogo lab pos "" False-}
 
 instance Arbitrary EstadoJogo where
     arbitrary = do
@@ -50,17 +30,22 @@ instance Arbitrary EstadoJogo where
 prop_move_labLength :: EstadoJogo -> String -> Bool
 prop_move_labLength ej moveArg = length (labirinto ej) == length (labirinto(moveEJ ej moveArg))
 
+-- Testa se a posicao do jogador apos o move nao sai dos limites do labirinto
 prop_move_offLimits :: EstadoJogo -> String -> Bool
 prop_move_offLimits ej moveArg = posicaoValida (labirinto ej) (jogador (moveEJ ej moveArg))
 
+-- Testa se o numero de chaves do jogador nao diminui apos o move
 prop_move_correctKeys :: EstadoJogo -> String -> Bool
 prop_move_correctKeys ej moveArg = length (chaves $ moveEJ ej moveArg) >= length (chaves ej)
 
+-- Testa se o numero de portas nao aumenta apos o move
 prop_move_correctDoors :: EstadoJogo -> String -> Bool
 prop_move_correctDoors ej moveArg = contaPortas (labirinto (moveEJ ej moveArg)) <= contaPortas (labirinto ej)
 
 --------------------------------------------------------
 
+-- se a posicao do jogador apos o move nao coincidir com nenhum portal --> conta 2 '@'
+-- se a posicao do jogador apos o move coincidir com um dos portais --> conta 1 '@'
 prop_move_correctPortals :: EstadoJogo -> String -> Bool
 prop_move_correctPortals ej moveArg
     | portais == 0 = True
