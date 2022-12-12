@@ -1,22 +1,18 @@
 module Labirintos (EstadoJogo(..)
                   , inicializa
-                  , labirinto
-                  , jogador
-                  , chaves
-                  , terminado
+                  , labirinto, jogador, chaves, terminado
                   , procura
-                  , toString
-                  , posicaoValida
-                  , contaPortas
-                  , posicaoPortal1
-                  , posicaoPortal2
-                  , existem2PortaisChar
-                  , existe1PortalChar
+                  , posicaoValida, condicaoValida
+                  , labirintos
+                  , contaCaracteres, contaPortas
+                  , posicaoPortal1, posicaoPortal2
                   , moveEJ
+                  , toString
                   ) where
 
 import Data.List(intercalate,sort)
 import Data.Char(toLower)
+import System.Random
 
 type Posicao = (Int,Int)
 type Lab = [String]
@@ -46,6 +42,42 @@ procuraIgnoraLinha (x:xs) e n l
     | n /= l && col /= -1 = (n,col)
     | otherwise = procuraIgnoraLinha xs e (n+1) l
     where col = procuraCol x e 0
+
+-----------------------------------------------------
+
+contaLinha :: Char -> String -> Int
+contaLinha pos linha = sum [1 | x <- linha, x == pos]
+
+contaCaracteres :: Char -> Lab -> Int
+contaCaracteres pos lab = sum [contaLinha pos x | x <- lab]
+
+interior :: [String]
+interior = [['*', x, y, z,'*'] | x <- "SF Aa*@", y <- "SF Aa*@", z <- "SF Aa*@"]
+
+todosLab :: [[String]]
+todosLab = [["*****", x, y, "*****"] | x <- interior, y <- interior]
+
+condicaoValida :: Lab -> Bool
+condicaoValida lab = contaCaracteres 'S' lab == 1 && contaCaracteres 'F' lab == 1 &&
+                     (contaCaracteres '@' lab == 2 || contaCaracteres '@' lab == 0)
+
+labirintos :: [Lab]
+labirintos = [x | x <- todosLab, condicaoValida x]
+
+{-parede :: Int -> String
+parede y = replicate y '*'
+
+linhas :: Int -> Lab
+linhas 0 = ["*"]
+linhas y = ['*':a:b | a <- "SF *ABab@", b <- linhas (y-1)]
+
+todosLab :: Int -> Int -> [Lab]
+todosLab 0 y = [[]]
+todosLab x y = [a:b | a <- linhas (y-2), b <- todosLab (x-1) y]
+  
+labirintos :: Int -> Int -> [Lab]
+labirintos x y = [wall:a ++ [wall] | a <- todosLab (x-2) y, condicaoValida a]
+  where wall = parede y-}
 
 -----------------------------------------------------
 
@@ -81,33 +113,22 @@ posicaoPortal1 lab = procura lab '@' 0
 posicaoPortal2 :: Lab -> Posicao -> Posicao
 posicaoPortal2 lab (px,py) = procura lab '@' px
 
-contaLinhaPortais :: String -> Int
-contaLinhaPortais linha = sum [1 | x <- linha, x == '@']
-
-contaPortais :: Lab -> Int
-contaPortais lab = sum [contaLinhaPortais x | x <- lab]
-
-existem2PortaisChar :: Lab -> Bool
-existem2PortaisChar lab = contaPortais lab == 2
-
-existe1PortalChar :: Lab -> Bool
-existe1PortalChar lab = contaPortais lab == 1
-
 -----------------------------------------------------
 
 toString :: EstadoJogo -> String
 toString ej = insereChaves (unlines (insere (labirinto ej) (jogador ej) 'P')) (chaves ej)
 
 insere :: Lab -> Posicao -> Char -> Lab
-insere lab pos elemento = fst splitRow ++ newRow : tail (snd splitRow)
-    where x = fst pos
-          y = snd pos
-          splitRow = splitAt x lab
+insere lab (x,y) elemento = fst splitRow ++ newRow : tail (snd splitRow)
+    where splitRow = splitAt x lab
           splitCol = splitAt y (head(snd splitRow))
           newRow = fst splitCol ++ elemento : tail (snd splitCol)
 
 insereChaves :: String -> String -> String
 insereChaves labStr chaves = labStr ++ "chaves: " ++ chaves
+
+instance Show EstadoJogo where
+    show ej = toString ej
 
 -----------------------------------------------------
 
@@ -122,9 +143,9 @@ dirCoord d
   | otherwise = (0,0)
 
 novaPos :: EstadoJogo -> Char -> Posicao
-novaPos ej d = (fst coord + fst oldPos,snd coord + snd oldPos)
-  where oldPos = jogador ej
-        coord = dirCoord d
+novaPos ej d = (a+x, b+y)
+  where (x,y) = jogador ej
+        (a,b) = dirCoord d
 
 -----------------------------------------------------
 
