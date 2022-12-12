@@ -1,3 +1,12 @@
+module Tests (prop_move_labLength
+              , prop_move_offLimits
+              , prop_move_correctKeys
+              , prop_move_correctDoors
+              , prop_move_correctPortals
+              , prop_move_finishCorrectly
+              , prop_move_notWall
+            ) where
+
 import Labirintos
 import Test.QuickCheck
 import System.Random
@@ -7,11 +16,29 @@ newtype Movimentos = Movimentos String
 dir :: Gen Char
 dir = elements "ulrd"
 instance Arbitrary Movimentos where
-    arbitrary = Movimentos <$> listOf dir
+    arbitrary = Movimentos <$> listOf1 dir
 
-{--- para testar com o sample (arbitrary :: Gen Movimentos)
-instance Show Movimentos where
-    show (Movimentos mov) = show mov-}
+{-newtype LabInterior = LabInterior [String]
+instance Arbitrary LabInterior where
+    arbitrary = do
+        x <- choose (2,5) :: Gen Int
+        y <- choose (2,5) :: Gen Int
+        let labs = replicateM x $ replicateM y $ elements "SF *@"
+        let validLabs = labs `suchThat ` condicaoValida
+        lab <- validLabs
+        LabInterior <$> validLabs
+
+criaLab :: LabInterior -> [String]
+criaLab (LabInterior lab) = parede:['*':x ++ "*" | x <- lab] ++ [parede]
+    where y = length $ head lab
+          parede = replicate (y+2) '*'
+
+instance Arbitrary EstadoJogo where
+    arbitrary = do
+        interior <- arbitrary :: Gen LabInterior
+        let lab = criaLab interior
+        let pos = procura lab 'S' 0
+        return $ EstadoJogo lab pos "" False-}
 
 instance Arbitrary EstadoJogo where
     arbitrary = do
@@ -36,6 +63,7 @@ prop_move_correctDoors ej moveArg = contaPortas (labirinto (moveEJ ej moveArg)) 
 
 prop_move_correctPortals :: EstadoJogo -> String -> Bool
 prop_move_correctPortals ej moveArg
+    | portais == 0 = True
     | player /= portal1 && player /= portal2 = portais == 2
     | player == portal1 || player == portal2 = portais == 1
     | otherwise = False
@@ -44,7 +72,7 @@ prop_move_correctPortals ej moveArg
           player = jogador newEJ
           portal1 = posicaoPortal1 lab
           portal2 = posicaoPortal2 lab portal1
-          portais = contaCaracteres '@' lab
+          portais = contaCaracteres '@' $ insere lab player 'P'
 
 
 -- se nao existir uma posicao de 'F' depois do move --> terminado tem de ser True
@@ -65,10 +93,11 @@ prop_move_notWall ej moveArg = not (posicaoParede lab (jogador $ moveEJ ej moveA
 -- se o move resulta na posicao de um portal --> a posicao do jogador apos o move corresponde ao outro portal
 prop_move_portalTeleport :: EstadoJogo -> String -> Bool
 prop_move_portalTeleport ej moveArg
-    | jogador (moveEJ ej moveArg) == portal1 = novaPosicao == portal2
-    | jogador (moveEJ ej moveArg) == portal2 = novaPosicao == portal1
+    | player == portal1 = novaPosicao == portal2
+    | player == portal2 = novaPosicao == portal1
     | otherwise = True
-    where novaPosicao = jogador (moveEJ (moveEJ ej moveArg) "")
+    where player = jogador (moveEJ ej moveArg)
+          novaPosicao = jogador (moveEJ (moveEJ ej moveArg) "")
           lab = labirinto ej
           portal1 = posicaoPortal1 lab
           portal2 = posicaoPortal2 lab portal1
