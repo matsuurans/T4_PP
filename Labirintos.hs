@@ -2,13 +2,11 @@ module Labirintos (EstadoJogo(..)
                   , inicializa
                   , labirinto, jogador, chaves, terminado
                   , procura, insere
-                  , posicaoValida, condicaoValida
                   , labirintos
                   , contaCaracteres, contaPortas
-                  , posicaoPortal1, posicaoPortal2
-                  , posicaoParede, posicaoPorta
-                  , moveEJ
-                  , toString
+                  , posicaoValida , posicaoPortal1, posicaoPortal2 , posicaoParede, posicaoPorta
+                  , novaPos
+                  , moveEJ , toString
                   ) where
 
 import Data.List(intercalate,sort)
@@ -79,21 +77,6 @@ condicaoValida lab = contaCaracteres 'S' lab == 1 && contaCaracteres 'F' lab == 
 labirintos :: [Lab]
 labirintos = [x | x <- todosLab, condicaoValida x]
 
-{-parede :: Int -> String
-parede y = replicate y '*'
-
-linhas :: Int -> Lab
-linhas 0 = ["*"]
-linhas y = ['*':a:b | a <- "SF *ABab@", b <- linhas (y-1)]
-
-todosLab :: Int -> Int -> [Lab]
-todosLab 0 y = [[]]
-todosLab x y = [a:b | a <- linhas (y-2), b <- todosLab (x-1) y]
-  
-labirintos :: Int -> Int -> [Lab]
-labirintos x y = [wall:a ++ [wall] | a <- todosLab (x-2) y, condicaoValida a]
-  where wall = parede y-}
-
 -----------------------------------------------------
 
 inicializa :: Lab -> Posicao -> String -> EstadoJogo
@@ -158,8 +141,6 @@ instance Show EstadoJogo where
     show ej = toString ej
 
 -----------------------------------------------------
-
--- as seguintes 2 funções auxiliares são usadas para executar o move
 
 dirCoord :: Char -> Posicao
 dirCoord d
