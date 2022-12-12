@@ -20,8 +20,6 @@ data EstadoJogo = EstadoJogo Lab Posicao String Bool
 
 -----------------------------------------------------
 
--- as seguintes 3 funções auxiliares são usadas para encontrar a posição de um elemento no labirinto
-
 procuraCol :: String -> Char -> Int -> Int
 procuraCol [] _ _ = -1
 procuraCol (x:xs) e n
