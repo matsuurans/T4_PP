@@ -4,6 +4,7 @@ module Labirintos (EstadoJogo(..)
                   , jogador
                   , chaves
                   , terminado
+                  , procura
                   , toString
                   , posicaoValida
                   , contaPortas
