@@ -92,12 +92,16 @@ prop_move_notWall ej moveArg = not (posicaoParede lab (jogador $ moveEJ ej moveA
 
 -- se o move resulta na posicao de um portal --> a posicao do jogador apos o move corresponde ao outro portal
 prop_move_portalTeleport :: EstadoJogo -> String -> Bool
-prop_move_portalTeleport ej moveArg
-    | player == portal1 = novaPosicao == portal2
-    | player == portal2 = novaPosicao == portal1
+prop_move_portalTeleport ej [] = True
+prop_move_portalTeleport ej (d:moveArg)
+    | portais == 0 = True
+    | antesMove == portal1 = novaPosicao == portal2
+    | antesMove == portal2 = novaPosicao == portal1
     | otherwise = True
-    where player = jogador (moveEJ ej moveArg)
+    where antesMove = novaPos ej d
+          player = jogador (moveEJ ej moveArg)
           novaPosicao = jogador (moveEJ (moveEJ ej moveArg) "")
           lab = labirinto ej
           portal1 = posicaoPortal1 lab
           portal2 = posicaoPortal2 lab portal1
+          portais = contaCaracteres '@' lab
