@@ -1,12 +1,12 @@
 module Labirintos (EstadoJogo(..)
                   , inicializa
                   , labirinto, jogador, chaves, terminado
-                  , procura
+                  , procura, insere
                   , posicaoValida, condicaoValida
                   , labirintos
                   , contaCaracteres, contaPortas
                   , posicaoPortal1, posicaoPortal2
-                  , posicaoParede
+                  , posicaoParede, posicaoPorta
                   , moveEJ
                   , toString
                   ) where
@@ -43,6 +43,19 @@ procuraIgnoraLinha (x:xs) e n l
     | n /= l && col /= -1 = (n,col)
     | otherwise = procuraIgnoraLinha xs e (n+1) l
     where col = procuraCol x e 0
+
+procuraIgnoraCol' :: String -> Char -> Int -> Int -> Int
+procuraIgnoraCol' [] _ _ _ = -1
+procuraIgnoraCol' (x:xs) e n c
+    | n /= c && x == e = n
+    | otherwise = procuraIgnoraCol' xs e (n+1) c
+
+procuraIgnoraCol :: Lab -> Char -> Int -> Int -> Posicao
+procuraIgnoraCol [] _ _ _ = (-1,-1)
+procuraIgnoraCol (x:xs) e n c
+    | col /= -1 = (n,col)
+    | otherwise = procuraIgnoraCol xs e (n+1) c
+    where col = procuraIgnoraCol' x e 0 c
 
 -----------------------------------------------------
 
@@ -101,7 +114,7 @@ terminado (EstadoJogo _ _ _ terminado) = terminado
 -----------------------------------------------------
 
 posicaoValida :: Lab -> Posicao -> Bool
-posicaoValida lab (x,y) =  (x < length lab && x >= 0) && (y < length lab && y >= 0)
+posicaoValida lab (x,y) =  (x < length lab && x >= 0) && (y < length (head lab) && y >= 0)
 
 contaLinhaPortas :: String -> Int
 contaLinhaPortas linha = sum [1 | x <- linha, x `elem` ['A'..'Z']]
@@ -113,10 +126,19 @@ posicaoPortal1 :: Lab -> Posicao
 posicaoPortal1 lab = procura lab '@' 0
 
 posicaoPortal2 :: Lab -> Posicao -> Posicao
-posicaoPortal2 lab (px,py) = procura lab '@' px
+posicaoPortal2 lab (px,py)
+  | ignoraCol /= (-1,-1) = ignoraCol
+  | ignoraLinha /= (-1,-1) = ignoraLinha
+  | otherwise = (-1,-1)
+  where ignoraCol = procuraIgnoraCol lab '@' 0 py
+        ignoraLinha = procuraIgnoraLinha lab '@' 0 px
+
 
 posicaoParede :: Lab -> Posicao -> Bool
 posicaoParede lab (x,y) = ((lab !! x) !! y) == '*'
+
+posicaoPorta :: Lab -> Posicao -> Bool
+posicaoPorta lab (x,y) = ((lab !! x) !! y) `elem` ['A'..'Z']
 
 -----------------------------------------------------
 
@@ -132,8 +154,8 @@ insere lab (x,y) elemento = fst splitRow ++ newRow : tail (snd splitRow)
 insereChaves :: String -> String -> String
 insereChaves labStr chaves = labStr ++ "chaves: " ++ chaves
 
---instance Show EstadoJogo where
---    show ej = toString ej
+instance Show EstadoJogo where
+    show ej = toString ej
 
 -----------------------------------------------------
 
@@ -152,12 +174,14 @@ novaPos ej d = (novaPosX ej (a+x), novaPosY ej (b+y))
   where (x,y) = jogador ej
         (a,b) = dirCoord d
 
+novaPosX :: EstadoJogo -> Int -> Int
 novaPosX ej x
   | x > labX = labX
   | x < 0 = 0
   | otherwise = x
   where labX = length (labirinto ej) - 1
 
+novaPosY :: EstadoJogo -> Int -> Int
 novaPosY ej y
   | y > labY = labY
   | y < 0 = 0
@@ -172,11 +196,12 @@ moveEJ ej (d:dir)
   | dest == ' ' || dest == 'S' = moveEJ (EstadoJogo lab newPos chavesEJ False) dir
   | dest == 'F' = moveEJ (EstadoJogo lab newPos chavesEJ True) dir
   | dest == '*' = moveEJ (EstadoJogo lab posJogador chavesEJ False) dir
-  | dest == '@' = moveEJ (EstadoJogo lab (procuraIgnoraLinha lab '@' 0 (fst newPos)) chavesEJ False) dir
+  | dest == '@' = moveEJ (EstadoJogo lab (posicaoPortal2 lab newPos) chavesEJ False) dir
   | dest `elem` ['a'..'z'] = moveEJ (EstadoJogo (insere lab (procura lab dest 0) ' ') newPos (sort (dest:chavesEJ)) False) dir
   | dest `elem` ['A'..'Z'] = if toLower dest `elem` chavesEJ
                              then moveEJ (EstadoJogo (insere lab (procura lab dest 0) ' ') newPos chavesEJ False) dir
                              else moveEJ (EstadoJogo lab posJogador chavesEJ False) dir
+  | otherwise = ej
   where newPos = novaPos ej d
         lab = labirinto ej
         dest = (lab !! fst newPos) !! snd newPos
