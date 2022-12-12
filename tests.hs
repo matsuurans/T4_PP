@@ -28,8 +28,8 @@ prop_move_correctPortals ej moveArg
 -- se nao existir uma posicao de 'F' depois do move --> terminado tem de ser True
 -- se existir uma posicao de 'F' depois do move --> terminado tem de ser False
 prop_move_finishCorrectly :: EstadoJogo -> String -> Bool
-prop_move_finishCorrectly ej moveArg = (procura (labirinto (moveEJ ej moveArg)) 'F' 0 == (-1,-1))
-                                        && terminado (moveEJ ej moveArg)
+prop_move_finishCorrectly ej moveArg = ((procura (labirinto (moveEJ ej moveArg)) 'F' 0 == (-1,-1))
+                                        && terminado (moveEJ ej moveArg))
                                         ||
-                                       (procura (labirinto (moveEJ ej moveArg)) 'F' 0 /= (-1,-1))
-                                        && not (terminado (moveEJ ej moveArg))
+                                       ((procura (labirinto (moveEJ ej moveArg)) 'F' 0 /= (-1,-1))
+                                        && not (terminado (moveEJ ej moveArg)))
