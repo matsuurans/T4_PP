@@ -43,6 +43,7 @@ runTests = do
     quickCheck prop_move_correctPortals
     quickCheck prop_move_finishCorrectly
     quickCheck prop_move_notWall
+    quickCheck prop_move_portalTeleport
 
 execute :: EstadoJogo -> IO ()
 execute ej = do
