@@ -21,12 +21,28 @@ $ ./Main -t         -- corre os testes
 import System.Environment
 import Control.Monad
 import Labirintos
+import Test.QuickCheck
+import Tests
 
 main = do
     args <- getArgs
-    content <- readFile (getFile args)
-    let ej = EstadoJogo (lines $ getLab content) (getPlayer content) (getKeys content) False
-    execute ej
+    let read = readArgs args
+    if read == "-t"
+        then runTests
+        else do
+            content <- readFile read
+            let ej = EstadoJogo (lines $ getLab content) (getPlayer content) (getKeys content) False
+            execute ej
+
+runTests :: IO ()
+runTests = do
+    quickCheck prop_move_labLength
+    quickCheck prop_move_offLimits
+    quickCheck prop_move_correctKeys
+    quickCheck prop_move_correctDoors
+    quickCheck prop_move_correctPortals
+    quickCheck prop_move_finishCorrectly
+    quickCheck prop_move_notWall
 
 execute :: EstadoJogo -> IO ()
 execute ej = do
@@ -49,7 +65,7 @@ move dir ej = do
 
 load :: String -> IO ()
 load ficheiro = do
-    content <- readFile (getFile [ficheiro])
+    content <- readFile ficheiro
     let ej = EstadoJogo (lines $ getLab content) (getPlayer content) (getKeys content) False
     execute ej
 
@@ -62,8 +78,10 @@ exit :: IO ()
 exit = do
     return ()
 
-getFile :: [String] -> String
-getFile args = if not (null args) then head args else "default.map"
+readArgs :: [String] -> String
+readArgs args = if not (null args)
+    then head args
+    else "default.map"
 
 getPlayer :: String -> (Int,Int)
 getPlayer content = read $ head $ lines content :: (Int,Int)
