@@ -60,6 +60,7 @@ todosLab = [["*****", x, y, "*****"] | x <- interior, y <- interior]
 
 condicaoValida :: Lab -> Bool
 condicaoValida lab = contaCaracteres 'S' lab == 1 && contaCaracteres 'F' lab == 1 &&
+                     contaCaracteres 'A' lab == 1 && contaCaracteres 'a' lab == 1 &&
                      (contaCaracteres '@' lab == 2 || contaCaracteres '@' lab == 0)
 
 labirintos :: [Lab]
@@ -131,8 +132,8 @@ insere lab (x,y) elemento = fst splitRow ++ newRow : tail (snd splitRow)
 insereChaves :: String -> String -> String
 insereChaves labStr chaves = labStr ++ "chaves: " ++ chaves
 
-instance Show EstadoJogo where
-    show ej = toString ej
+--instance Show EstadoJogo where
+--    show ej = toString ej
 
 -----------------------------------------------------
 
@@ -147,9 +148,21 @@ dirCoord d
   | otherwise = (0,0)
 
 novaPos :: EstadoJogo -> Char -> Posicao
-novaPos ej d = (a+x, b+y)
+novaPos ej d = (novaPosX ej (a+x), novaPosY ej (b+y))
   where (x,y) = jogador ej
         (a,b) = dirCoord d
+
+novaPosX ej x
+  | x > labX = labX
+  | x < 0 = 0
+  | otherwise = x
+  where labX = length (labirinto ej) - 1
+
+novaPosY ej y
+  | y > labY = labY
+  | y < 0 = 0
+  | otherwise = y
+  where labY = length (head $ labirinto ej) - 1
 
 -----------------------------------------------------
 
