@@ -50,8 +50,32 @@ prop_move_correctPortals ej moveArg
 -- se nao existir uma posicao de 'F' depois do move --> terminado tem de ser True
 -- se existir uma posicao de 'F' depois do move --> terminado tem de ser False
 prop_move_finishCorrectly :: EstadoJogo -> String -> Bool
+<<<<<<< Updated upstream
 prop_move_finishCorrectly ej moveArg = (posF == player && over) || (posF /= player && not over)
     where newEJ = moveEJ ej moveArg
           posF = procura (labirinto newEJ) 'F' 0
           player = jogador newEJ
           over = terminado newEJ
+=======
+prop_move_finishCorrectly ej moveArg = (posF == (-1,-1) && over) || (posF /= (-1,-1) && not over)
+    where posF = procura (labirinto $ moveEJ ej moveArg) 'F' 0
+          over = terminado $ moveEJ ej moveArg
+
+
+-- no caso do move resultar numa posicao do tipo '*', a posicao do jogador tem de permanecer a mesma
+prop_move_notWall :: EstadoJogo -> String -> Bool
+prop_move_notWall ej moveArg = not (posicaoParede lab (jogador $ moveEJ ej moveArg)) || (jogador ej == jogador (moveEJ ej moveArg))
+    where lab = labirinto ej
+
+
+-- se o move resulta na posicao de um portal --> a posicao do jogador apos o move corresponde ao outro portal
+prop_move_portalTeleport :: EstadoJogo -> String -> Bool
+prop_move_portalTeleport ej moveArg
+    | jogador (moveEJ ej moveArg) == portal1 = novaPosicao == portal2
+    | jogador (moveEJ ej moveArg) == portal2 = novaPosicao == portal1
+    | otherwise = True
+    where novaPosicao = jogador (moveEJ (moveEJ ej moveArg) "")
+          lab = labirinto ej
+          portal1 = posicaoPortal1 lab
+          portal2 = posicaoPortal2 lab portal1
+>>>>>>> Stashed changes

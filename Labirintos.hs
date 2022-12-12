@@ -6,6 +6,7 @@ module Labirintos (EstadoJogo(..)
                   , labirintos
                   , contaCaracteres, contaPortas
                   , posicaoPortal1, posicaoPortal2
+                  , posicaoParede
                   , moveEJ
                   , toString
                   ) where
@@ -112,6 +113,9 @@ posicaoPortal1 lab = procura lab '@' 0
 
 posicaoPortal2 :: Lab -> Posicao -> Posicao
 posicaoPortal2 lab (px,py) = procura lab '@' px
+
+posicaoParede :: Lab -> Posicao -> Bool
+posicaoParede lab (x,y) = ((lab !! x) !! y) == '*'
 
 -----------------------------------------------------
 
